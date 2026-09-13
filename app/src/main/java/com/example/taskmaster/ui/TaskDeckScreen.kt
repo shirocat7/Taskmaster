@@ -24,6 +24,7 @@ fun TaskDeckScreen(
     viewModel: TaskViewModel,
     modifier: Modifier = Modifier
 ) {
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
     var showListSheet by remember { mutableStateOf(false) }
@@ -44,7 +45,10 @@ fun TaskDeckScreen(
                     horizontalArrangement = Arrangement.End
                 ) {
                     // Button to slide open/close the task list
-                    IconButton(onClick = { showListSheet = true }) {
+                    IconButton(
+                        onClick = {
+                            showListSheet = true},
+                            modifier = Modifier.padding(top = 12.dp)) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
                             contentDescription = "View Task List"
@@ -69,7 +73,7 @@ fun TaskDeckScreen(
                 .padding(innerPadding)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.Top
         ) {
             // 1. Quote Header
             Text(
@@ -78,6 +82,9 @@ fun TaskDeckScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
+
+            // --- GAP BETWEEN Quote AND Card ---
+            Spacer(modifier = Modifier.height(32.dp))
 
             // 2. Active Card Area
             if (uiState.totalCount == 0) {
@@ -114,6 +121,9 @@ fun TaskDeckScreen(
                     }
                 }
             }
+
+            // --- GAP BETWEEN CARD AND BUTTONS ---
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 3. Action Buttons
             if (!uiState.isDeckEmpty && uiState.totalCount > 0) {

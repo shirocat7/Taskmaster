@@ -11,8 +11,8 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE dateCreated >= :startOfDay ORDER BY orderInDeck ASC")
     fun getTodayTasks(startOfDay: Long): Flow<List<Task>>
 
-    @Query("SELECT * FROM tasks WHERE status IN ('ACTIVE', 'DELAYED') AND dateCreated >= :startOfDay ORDER BY orderInDeck ASC")
-    fun getActiveDeck(startOfDay: Long): Flow<List<Task>>
+    @Query("SELECT * FROM tasks WHERE status IN ('ACTIVE', 'DELAYED') ORDER BY orderInDeck ASC")
+    fun getActiveDeck(): Flow<List<Task>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: Task)
@@ -25,6 +25,9 @@ interface TaskDao {
 
     @Update
     suspend fun updateTask(task: Task)
+
+    @Query("UPDATE tasks SET status = 'ACTIVE', orderInDeck = 0")
+    suspend fun resetAllTasksToActive()
 
     @Query("UPDATE tasks SET status = :status WHERE id = :taskId")
     suspend fun updateTaskStatus(taskId: Long, status: TaskStatus)

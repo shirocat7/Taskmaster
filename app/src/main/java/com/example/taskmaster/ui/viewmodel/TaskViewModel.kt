@@ -16,6 +16,13 @@ class TaskViewModel(
     private val repository: TaskRepository
 ) : ViewModel() {
 
+    init {
+        // Run daily reset check immediately when ViewModel is created
+        viewModelScope.launch {
+            repository.checkAndResetDailyTasks()
+        }
+    }
+
     // Daily Motivational Quotes List
     private val defaultQuotes = listOf(
         "Focus on being productive instead of busy.",

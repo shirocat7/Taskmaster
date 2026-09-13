@@ -13,3 +13,11 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+build/reports/problems/problems-report.html
+
+build/reports/configuration-cache/nx7bdw9i7of9431pcljf0mcd/519s09h59hz3boewtdl05q9lv/configuration-cache-report.html
+
+build/reports/configuration-cache/nx7bdw9i7of9431pcljf0mcd/89vfyd0rmr6ed1xu3vi85wnd5/configuration-cache-report.html
+
+.kotlin/sessions/kotlin-compiler-8228053874764924627.salive

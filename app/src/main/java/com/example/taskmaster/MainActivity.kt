@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
 
         // Initialize Database, Repository, and ViewModel
         val database = TaskDatabase.getDatabase(applicationContext)
-        val repository = TaskRepository(database.taskDao())
+        val repository = TaskRepository(database.taskDao(), applicationContext)
         val viewModel: TaskViewModel by viewModels { TaskViewModelFactory(repository) }
 
         setContent {

@@ -1,13 +1,42 @@
 package com.example.taskmaster.data.repository
 
+import android.content.Context
 import com.example.taskmaster.data.local.Task
 import com.example.taskmaster.data.local.TaskDao
 import com.example.taskmaster.data.local.TaskStatus
 import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
 
-class TaskRepository(private val taskDao: TaskDao) {
+class TaskRepository(private val taskDao: TaskDao, context: Context) {
 
+    private val prefs = context.getSharedPreferences("deck_prefs", Context.MODE_PRIVATE)
+    val todayTasks: Flow<List<Task>> = taskDao.getAllTasks()
+    val activeDeck: Flow<List<Task>> = taskDao.getActiveDeck()
+
+    /**
+     * Checks if midnight has passed since the last launch.
+     * If yes, resets all tasks back to ACTIVE.
+     */
+    suspend fun checkAndResetDailyTasks() {
+        val lastOpenDay = prefs.getInt("last_open_day_of_year", -1)
+        val lastOpenYear = prefs.getInt("last_open_year", -1)
+
+        Calendar.getInstance().apply {
+            val currentDay = get(Calendar.DAY_OF_YEAR)
+            val currentYear = get(Calendar.YEAR)
+
+            // If it's a new day or year, reset the task deck!
+            if (currentDay != lastOpenDay || currentYear != lastOpenYear) {
+                taskDao.resetAllTasksToActive()
+
+                // Update stored last-opened date
+                prefs.edit()
+                    .putInt("last_open_day_of_year", currentDay)
+                    .putInt("last_open_year", currentYear)
+                    .apply()
+            }
+        }
+    }
     private fun getStartOfDayMillis(): Long {
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
@@ -17,9 +46,6 @@ class TaskRepository(private val taskDao: TaskDao) {
         }
         return calendar.timeInMillis
     }
-
-    val todayTasks: Flow<List<Task>> = taskDao.getTodayTasks(getStartOfDayMillis())
-    val activeDeck: Flow<List<Task>> = taskDao.getActiveDeck(getStartOfDayMillis())
 
     suspend fun addTask(title: String) {
         val newTask = Task(title = title)
