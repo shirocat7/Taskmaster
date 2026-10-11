@@ -3,6 +3,7 @@ package com.example.taskmaster.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -17,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.taskmaster.data.local.Task
 import com.example.taskmaster.ui.viewmodel.TaskViewModel
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,13 +78,13 @@ fun TaskDeckScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            // 1. Quote Header
-            Text(
-                text = "\"${uiState.quote}\"",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
+            // 1. Quote Header TODO: Decide to keep or remove
+//            Text(
+//                text = "\"${uiState.quote}\"",
+//                style = MaterialTheme.typography.titleMedium,
+//                color = MaterialTheme.colorScheme.onSurfaceVariant,
+//                textAlign = TextAlign.Center
+//            )
 
             // --- GAP BETWEEN Quote AND Card ---
             Spacer(modifier = Modifier.height(32.dp))
@@ -141,7 +144,7 @@ fun TaskDeckScreen(
         }
     }
 
-    // --- SLIDING TASK LIST SHEET ---
+    // --- SLIDING TASK LIST SHEET WITH REORDER CONTROLS ---
     if (showListSheet) {
         ModalBottomSheet(
             onDismissRequest = { showListSheet = false }
@@ -164,10 +167,35 @@ fun TaskDeckScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxHeight(0.6f)
                     ) {
-                        items(uiState.allTasks, key = { it.id }) { task ->
+                        itemsIndexed(uiState.allTasks, key = { _, task -> task.id }) { index, task ->
                             ListItem(
                                 headlineContent = { Text(task.title) },
                                 supportingContent = { Text("Status: ${task.status.name}") },
+                                leadingContent = {
+                                    // Up / Down Reorder Arrows
+                                    Column {
+                                        IconButton(
+                                            onClick = { viewModel.moveTaskUp(index) },
+                                            enabled = index > 0,
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.ArrowUpward,
+                                                contentDescription = "Move Up"
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { viewModel.moveTaskDown(index) },
+                                            enabled = index < uiState.allTasks.lastIndex,
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.ArrowDownward,
+                                                contentDescription = "Move Down"
+                                            )
+                                        }
+                                    }
+                                },
                                 trailingContent = {
                                     Row {
                                         IconButton(onClick = { editingTask = task }) {

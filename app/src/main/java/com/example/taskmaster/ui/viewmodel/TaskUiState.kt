@@ -9,7 +9,7 @@ data class TaskUiState(
     val completedCount: Int = 0,
     val totalCount: Int = 0,
     val progress: Float = 0f,
-    val quote: String = "Focus on being productive instead of busy.",
+    val quote: String = "",
     val isDeckEmpty: Boolean = false,
     val isLoading: Boolean = true
 )

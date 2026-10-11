@@ -75,4 +75,19 @@ class TaskRepository(private val taskDao: TaskDao, context: Context) {
         )
         taskDao.updateTask(updatedTask)
     }
+
+    suspend fun reorderTasks(fromIndex: Int, toIndex: Int, currentList: List<Task>) {
+        if (fromIndex !in currentList.indices || toIndex !in currentList.indices) return
+
+        val mutableList = currentList.toMutableList()
+        val movedTask = mutableList.removeAt(fromIndex)
+        mutableList.add(toIndex, movedTask)
+
+        // Re-index orderInDeck sequentially
+        val updatedTasks = mutableList.mapIndexed { index, task ->
+            task.copy(orderInDeck = index)
+        }
+
+        taskDao.updateTasks(updatedTasks)
+    }
 }

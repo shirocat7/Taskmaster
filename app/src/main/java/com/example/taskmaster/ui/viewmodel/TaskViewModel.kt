@@ -25,10 +25,7 @@ class TaskViewModel(
 
     // Daily Motivational Quotes List
     private val defaultQuotes = listOf(
-        "Focus on being productive instead of busy.",
-        "Small daily improvements over time lead to stunning results.",
-        "Do the hard jobs first. The easy jobs will take care of themselves.",
-        "Action is the foundational key to all success."
+        ""
     )
 
     // Update uiState flow mapping to pass allTasks
@@ -119,6 +116,22 @@ class TaskViewModel(
         if (newTitle.isBlank()) return
         viewModelScope.launch {
             repository.updateTaskTitle(taskId, newTitle.trim())
+        }
+    }
+
+    fun moveTaskUp(index: Int) {
+        if (index <= 0) return
+        val currentList = uiState.value.allTasks
+        viewModelScope.launch {
+            repository.reorderTasks(fromIndex = index, toIndex = index - 1, currentList = currentList)
+        }
+    }
+
+    fun moveTaskDown(index: Int) {
+        val currentList = uiState.value.allTasks
+        if (index >= currentList.lastIndex) return
+        viewModelScope.launch {
+            repository.reorderTasks(fromIndex = index, toIndex = index + 1, currentList = currentList)
         }
     }
 

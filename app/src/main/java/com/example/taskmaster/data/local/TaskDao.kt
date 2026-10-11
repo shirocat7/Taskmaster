@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
-    @Query("SELECT * FROM tasks")
+    @Query("SELECT * FROM tasks ORDER BY orderInDeck ASC, id ASC")
     fun getAllTasks(): Flow<List<Task>>
 
     @Query("SELECT * FROM tasks WHERE dateCreated >= :startOfDay ORDER BY orderInDeck ASC")
@@ -24,9 +24,15 @@ interface TaskDao {
     suspend fun deleteTask(taskId: Long)
 
     @Update
+    suspend fun updateTasks(tasks: List<Task>)
+
+    @Update
     suspend fun updateTask(task: Task)
 
-    @Query("UPDATE tasks SET status = 'ACTIVE', orderInDeck = 0")
+    @Query("UPDATE tasks SET orderInDeck = :newOrder WHERE id = :taskId")
+    suspend fun updateTaskOrder(taskId: Long, newOrder: Int)
+
+    @Query("UPDATE tasks SET status = 'ACTIVE'")
     suspend fun resetAllTasksToActive()
 
     @Query("UPDATE tasks SET status = :status WHERE id = :taskId")
