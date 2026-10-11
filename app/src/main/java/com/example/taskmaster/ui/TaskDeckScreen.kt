@@ -2,10 +2,12 @@ package com.example.taskmaster.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
@@ -18,8 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.taskmaster.data.local.Task
 import com.example.taskmaster.ui.viewmodel.TaskViewModel
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +31,7 @@ fun TaskDeckScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
     var showListSheet by remember { mutableStateOf(false) }
+    var showCalendarSheet by remember { mutableStateOf(false) } // State for calendar bottom sheet
     var editingTask by remember { mutableStateOf<Task?>(null) }
     var newTaskTitle by remember { mutableStateOf("") }
 
@@ -50,8 +51,10 @@ fun TaskDeckScreen(
                     // Button to slide open/close the task list
                     IconButton(
                         onClick = {
-                            showListSheet = true},
-                            modifier = Modifier.padding(top = 12.dp)) {
+                            showListSheet = true
+                        },
+                        modifier = Modifier.padding(top = 12.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
                             contentDescription = "View Task List"
@@ -60,13 +63,36 @@ fun TaskDeckScreen(
                 }
             }
         },
+        // Spread Floating Action Buttons across the bottom: Calendar on Left, Add Task on Right
+        floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddDialog = true },
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 60.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Task")
+                // 1. Bottom-Left Calendar History Icon Button
+                SmallFloatingActionButton(
+                    onClick = { showCalendarSheet = true },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = "View Completion History"
+                    )
+                }
+
+                // 2. Bottom-Right Add Task Button
+                FloatingActionButton(
+                    onClick = { showAddDialog = true },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add Task")
+                }
             }
         }
     ) { innerPadding ->
@@ -140,6 +166,21 @@ fun TaskDeckScreen(
                 }
             } else {
                 Spacer(modifier = Modifier.height(48.dp))
+            }
+        }
+    }
+
+    // --- BOTTOM-LEFT CALENDAR SHEET ---
+    if (showCalendarSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showCalendarSheet = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                CompletionCalendarView(history = uiState.historyProgress)
             }
         }
     }

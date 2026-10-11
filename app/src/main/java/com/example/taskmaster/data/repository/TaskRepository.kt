@@ -1,17 +1,21 @@
 package com.example.taskmaster.data.repository
 
 import android.content.Context
+import com.example.taskmaster.data.local.DailyProgress
 import com.example.taskmaster.data.local.Task
 import com.example.taskmaster.data.local.TaskDao
 import com.example.taskmaster.data.local.TaskStatus
+import com.example.taskmaster.data.local.DailyProgressDao
 import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
 
-class TaskRepository(private val taskDao: TaskDao, context: Context) {
+class TaskRepository(private val taskDao: TaskDao, private val dailyProgressDao : DailyProgressDao, context: Context) {
 
     private val prefs = context.getSharedPreferences("deck_prefs", Context.MODE_PRIVATE)
     val todayTasks: Flow<List<Task>> = taskDao.getAllTasks()
     val activeDeck: Flow<List<Task>> = taskDao.getActiveDeck()
+
+    val allDailyProgress: Flow<List<DailyProgress>> = dailyProgressDao.getAllProgress()
 
     /**
      * Checks if midnight has passed since the last launch.
@@ -74,6 +78,16 @@ class TaskRepository(private val taskDao: TaskDao, context: Context) {
             orderInDeck = currentMaxOrder + 1
         )
         taskDao.updateTask(updatedTask)
+    }
+
+    suspend fun saveTodayProgress(completed: Int, total: Int) {
+        val startOfDay = getStartOfDayMillis()
+        val progress = DailyProgress(
+            dateMillis = startOfDay,
+            completedCount = completed,
+            totalCount = total
+        )
+        dailyProgressDao.upsertProgress(progress)
     }
 
     suspend fun reorderTasks(fromIndex: Int, toIndex: Int, currentList: List<Task>) {

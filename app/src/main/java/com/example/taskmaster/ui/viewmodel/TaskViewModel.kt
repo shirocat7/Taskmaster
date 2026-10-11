@@ -28,14 +28,22 @@ class TaskViewModel(
         ""
     )
 
-    // Update uiState flow mapping to pass allTasks
+    // Combine tasks AND historical daily progress together
     val uiState: StateFlow<TaskUiState> = combine(
         repository.todayTasks,
-        repository.activeDeck
-    ) { allTasks, activeDeck ->
+        repository.activeDeck,
+        repository.allDailyProgress
+    ) { allTasks, activeDeck, historyProgress ->
         val total = allTasks.size
         val completed = allTasks.count { it.status == TaskStatus.COMPLETED }
         val progressFraction = if (total > 0) completed.toFloat() / total.toFloat() else 0f
+
+        // Automatically save/update today's progress whenever task counts change
+        if (total > 0) {
+            viewModelScope.launch {
+                repository.saveTodayProgress(completed, total)
+            }
+        }
 
         TaskUiState(
             activeDeck = activeDeck,
@@ -45,7 +53,8 @@ class TaskViewModel(
             totalCount = total,
             progress = progressFraction,
             isDeckEmpty = activeDeck.isEmpty() && total > 0,
-            isLoading = false
+            isLoading = false,
+            historyProgress = historyProgress
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TaskUiState())
 

@@ -1,5 +1,6 @@
 package com.example.taskmaster.ui.viewmodel
 
+import com.example.taskmaster.data.local.DailyProgress
 import com.example.taskmaster.data.local.Task
 
 data class TaskUiState(
@@ -11,5 +12,6 @@ data class TaskUiState(
     val progress: Float = 0f,
     val quote: String = "",
     val isDeckEmpty: Boolean = false,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val historyProgress: List<DailyProgress> = emptyList()
 )
